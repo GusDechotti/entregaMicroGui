@@ -1,0 +1,212 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Sistema de Tradução Assíncrona",
+    "description": "API REST para receber requisições de tradução. As requisições são processadas de forma assíncrona por um serviço worker.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor de Desenvolvimento Local"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Translations",
+      "description": "Operações relacionadas às requisições de tradução."
+    }
+  ],
+  "paths": {
+    "/translations": {
+      "post": {
+        "tags": ["Translations"],
+        "summary": "Cria uma nova requisição de tradução",
+        "description": "Recebe um texto para tradução, o salva com status 'queued' e publica a tarefa em uma fila de mensagens. Responde imediatamente com um ID de requisição.",
+        "requestBody": {
+          "description": "Objeto contendo o texto e os idiomas para a tradução.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranslationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Requisição de tradução recebida com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestAcceptedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Campos obrigatórios ausentes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro Interno do Servidor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/translations/{requestId}": {
+      "get": {
+        "tags": ["Translations"],
+        "summary": "Consulta o status de uma tradução",
+        "description": "Recupera o status completo e os dados de uma requisição de tradução usando seu ID.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "description": "ID da requisição de tradução.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "687f191e810c19729de860ea"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados da requisição de tradução recuperados com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranslationObject"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requisição de tradução não encontrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro Interno do Servidor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TranslationRequest": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "example": "world"
+          },
+          "sourceLanguage": {
+            "type": "string",
+            "example": "en"
+          },
+          "targetLanguage": {
+            "type": "string",
+            "example": "pt"
+          }
+        },
+        "required": ["text", "sourceLanguage", "targetLanguage"]
+      },
+      "RequestAcceptedResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Translation request received."
+          },
+          "requestId": {
+            "type": "string",
+            "example": "687f191e810c19729de860ea"
+          }
+        }
+      },
+      "TranslationObject": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["queued", "processing", "completed", "failed"],
+            "example": "completed"
+          },
+          "requestId": {
+            "type": "string",
+            "example": "687f191e810c19729de860ea"
+          },
+          "originalText": {
+            "type": "string",
+            "example": "world"
+          },
+          "translatedText": {
+            "type": "string",
+            "example": "mundo"
+          },
+          "sourceLanguage": {
+            "type": "string",
+            "example": "en"
+          },
+          "targetLanguage": {
+            "type": "string",
+            "example": "pt"
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-06-18T22:00:30.178Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-06-18T22:00:35.421Z"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Translation request not found."
+          }
+        }
+      }
+    }
+  }
+}
