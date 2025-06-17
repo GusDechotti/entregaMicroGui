@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:5.0
+    container_name: translation_mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=user
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    container_name: translation_rabbitmq_node
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  api:
+    build: ./translation-api
+    container_name: translation_api_service_node
+    command: npm start
+    volumes:
+      - ./translation-api/src:/app/src
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+      - rabbitmq
+    environment:
+      - DATABASE_URL=mongodb://user:password@mongodb:27017/translations_db?authSource=admin
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+
+  worker:
+    build: ./translation-worker
+    container_name: translation_worker_service_node
+    command: npm start
+    volumes:
+      - ./translation-worker/src:/app/src
+    depends_on:
+      - mongodb
+      - rabbitmq
+    environment:
+      - DATABASE_URL=mongodb://user:password@mongodb:27017/translations_db?authSource=admin
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+
+volumes:
+  mongo_data:
