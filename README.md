@@ -49,15 +49,16 @@ O fluxo de dados segue o padrão **Produtor-Consumidor**, mediado por uma fila d
 
 ## 4\. Tecnologias Utilizadas
 
-| Componente                | Tecnologia                                                              | Justificativa                                                                              |
-| ------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| **Orquestração** | **Docker & Docker Compose** | Isola e gerencia o ciclo de vida de todos os serviços de forma consistente.                |
-| **Serviço da API** | **Node.js + Express.js** | Ecossistema robusto e performático para a criação de APIs REST.                              |
-| **Serviço Worker** | **Node.js** | Utiliza a mesma base tecnológica da API, facilitando o desenvolvimento.                    |
+| Componente | Tecnologia | Justificativa |
+|---|---|---|
+| **Orquestração** | **Docker & Docker Compose** | Isola e gerencia o ciclo de vida de todos os serviços de forma consistente. |
+| **Serviço da API** | **Node.js + Express.js** | Ecossistema robusto e performático para a criação de APIs REST. |
+| **Serviço Worker** | **Node.js** | Utiliza a mesma base tecnológica da API, facilitando o desenvolvimento. |
 | **Banco de Dados** | **MongoDB** | Banco de dados NoSQL orientado a documentos, ideal para armazenar os dados de cada requisição. |
 | **Fila de Mensagens** | **RabbitMQ** | Message broker robusto e confiável, padrão de mercado para implementação de filas de tarefas. |
-| **Comunicação com o DB** | **Mongoose** | Biblioteca ODM que facilita a modelagem e interação com o MongoDB em um ambiente Node.js.    |
-| **Comunicação com a Fila**| **amqplib** | Biblioteca cliente AMQP para Node.js, permitindo a comunicação com o RabbitMQ.               |
+| **Documentação da API**| **Swagger / OpenAPI** | Gera uma documentação interativa para a API, facilitando testes e o entendimento dos endpoints. |
+| **Comunicação com o DB** | **Mongoose** | Biblioteca ODM que facilita a modelagem e interação com o MongoDB em um ambiente Node.js. |
+| **Comunicação com a Fila**| **amqplib** | Biblioteca cliente AMQP para Node.js, permitindo a comunicação com o RabbitMQ. |
 
 ## 5\. Como Executar o Projeto
 
@@ -105,9 +106,20 @@ O fluxo de dados segue o padrão **Produtor-Consumidor**, mediado por uma fila d
 
 ## 6\. Como Testar a Aplicação
 
-Use um cliente de API (como Postman, Insomnia) ou `curl` no terminal.
+Você pode testar a API de duas maneiras: através da documentação interativa com Swagger ou usando um cliente de API como o `curl`.
 
-### 1\. Criar uma Requisição de Tradução
+### 1\. Acessando a Documentação Interativa (Swagger)
+
+A forma mais fácil de testar é usando a interface do Swagger, que documenta e permite interagir com a API diretamente pelo navegador.
+
+1.  Após iniciar os contêineres, acesse o seguinte endereço no seu navegador:
+    **[http://localhost:3000/api-docs](https://www.google.com/search?q=http://localhost:3000/api-docs)**
+
+2.  Você verá os dois endpoints da API. Clique em um deles para expandir, preencha os parâmetros necessários e clique em "Execute" para enviar uma requisição real.
+
+### 2\. Testando com `curl` (Linha de Comando)
+
+#### a) Criar uma Requisição de Tradução
 
 Envie uma requisição `POST` para criar uma nova tarefa.
 
@@ -130,7 +142,7 @@ A resposta será um JSON com o `requestId` gerado. **Guarde este ID.**
 }
 ```
 
-### 2\. Consultar o Status da Tradução
+#### b) Consultar o Status da Tradução
 
 Use o `requestId` recebido para consultar o status da tarefa.
 
@@ -167,6 +179,7 @@ curl http://localhost:3000/translations/SEU_REQUEST_ID_AQUI
 │   ├── Dockerfile
 │   ├── package.json
 │   └── src/                  # Código-fonte da API
+│       └── swagger.json      # Definição da documentação OpenAPI
 └── translation-worker/       # Microsserviço de tradução (Consumidor)
     ├── Dockerfile
     ├── package.json
